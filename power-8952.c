@@ -151,32 +151,34 @@ int  set_interactive_override(struct power_module *module, int on)
    }
     saved_interactive_mode = !!on;
 
-    set_i_count ++;
-    ALOGI("Got set_interactive hint on= %d, count= %d\n", on, set_i_count);
+    if(is_target_SDM439()) {
+        set_i_count ++;
+        ALOGI("Got set_interactive hint on= %d, count= %d\n", on, set_i_count);
 
-    if (init_interactive_hint == 0) {
-        //First time the display is turned off
-        display_fd = TEMP_FAILURE_RETRY(open(SYS_DISPLAY_PWR, O_RDWR));
-        if (display_fd < 0) {
-            strerror_r(errno,err_buf,sizeof(err_buf));
-            ALOGE("Error opening %s: %s\n", SYS_DISPLAY_PWR, err_buf);
-            return HINT_HANDLED;
-        } else
-            init_interactive_hint = 1;
-    } else {
-        if (!on ) {
-            /* Display off. */
-            rc = TEMP_FAILURE_RETRY(write(display_fd, display_off, strlen(display_off)));
-            if (rc < 0) {
+        if (init_interactive_hint == 0) {
+            //First time the display is turned off
+            display_fd = TEMP_FAILURE_RETRY(open(SYS_DISPLAY_PWR, O_RDWR));
+            if (display_fd < 0) {
                 strerror_r(errno,err_buf,sizeof(err_buf));
-                ALOGE("Error writing %s to  %s: %s\n", display_off, SYS_DISPLAY_PWR, err_buf);
-            }
+                ALOGE("Error opening %s: %s\n", SYS_DISPLAY_PWR, err_buf);
+                return HINT_HANDLED;
+            } else
+                init_interactive_hint = 1;
         } else {
-            /* Display on */
-            rc = TEMP_FAILURE_RETRY(write(display_fd, display_on, strlen(display_on)));
-            if (rc < 0) {
-                strerror_r(errno,err_buf,sizeof(err_buf));
-                ALOGE("Error writing %s to  %s: %s\n", display_on, SYS_DISPLAY_PWR, err_buf);
+            if (!on ) {
+                /* Display off. */
+                rc = TEMP_FAILURE_RETRY(write(display_fd, display_off, strlen(display_off)));
+                if (rc < 0) {
+                    strerror_r(errno,err_buf,sizeof(err_buf));
+                    ALOGE("Error writing %s to  %s: %s\n", display_off, SYS_DISPLAY_PWR, err_buf);
+                }
+            } else {
+                /* Display on */
+                rc = TEMP_FAILURE_RETRY(write(display_fd, display_on, strlen(display_on)));
+                if (rc < 0) {
+                    strerror_r(errno,err_buf,sizeof(err_buf));
+                    ALOGE("Error writing %s to  %s: %s\n", display_on, SYS_DISPLAY_PWR, err_buf);
+                }
             }
         }
     }
