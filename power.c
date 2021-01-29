@@ -144,6 +144,17 @@ void set_interactive(struct power_module *module, int on)
     ALOGI("Got set_interactive hint");
 }
 
+void set_feature(struct power_module *module, feature_t feature, int state)
+{
+#ifdef TAP_TO_WAKE_NODE
+    if (feature == POWER_FEATURE_DOUBLE_TAP_TO_WAKE) {
+        ALOGI("Double tap to wake is %s.",
+                state ? "enabled" : "disabled");
+        sysfs_write(TAP_TO_WAKE_NODE, state ? "1" : "0");
+    }
+#endif
+}
+
 static int power_device_open(const hw_module_t* module, const char* name,
         hw_device_t** device)
 {
@@ -163,7 +174,7 @@ static int power_device_open(const hw_module_t* module, const char* name,
                     dev->powerHint = power_hint;
                     dev->setInteractive = set_interactive;
                     /* At the moment we support 0.2 APIs */
-                    dev->setFeature = NULL;
+                    dev->setFeature = set_feature;
                     dev->get_number_of_platform_modes = NULL;
                     dev->get_platform_low_power_stats = NULL;
                     dev->get_voter_list = NULL;
@@ -195,4 +206,5 @@ struct power_module HAL_MODULE_INFO_SYM = {
     .init = power_init,
     .powerHint = power_hint,
     .setInteractive = set_interactive,
+    .setFeature = set_feature,
 };
