@@ -86,7 +86,7 @@ static void power_hint(struct power_module *module, power_hint_t hint,
     }
     switch(hint) {
         case POWER_HINT_VSYNC:
-        break;
+            break;
         case POWER_HINT_VR_MODE:
             ALOGI("VR mode power hint not handled in power_hint_override");
             break;
@@ -97,7 +97,7 @@ static void power_hint(struct power_module *module, power_hint_t hint,
 
             interaction(duration, sizeof(resources)/sizeof(resources[0]), resources);
         }
-        break;
+            break;
         //fall through below, hints will fail if not defined in powerhint.xml
         case POWER_HINT_SUSTAINED_PERFORMANCE:
         case POWER_HINT_VIDEO_ENCODE:
@@ -107,16 +107,18 @@ static void power_hint(struct power_module *module, power_hint_t hint,
 
                 if (handles[hint].handle > 0)
                     handles[hint].ref_count++;
-            }
-            else
-                if (handles[hint].handle > 0)
+            } else {
+                if (handles[hint].handle > 0) {
                     if (--handles[hint].ref_count == 0) {
                         release_request(handles[hint].handle);
                         handles[hint].handle = 0;
                     }
-                else
+                } else
                     ALOGE("Lock for hint: %X was not acquired, cannot be released", hint);
-        break;
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -161,17 +163,16 @@ static int power_device_open(const hw_module_t* module, const char* name,
                     dev->powerHint = power_hint;
                     dev->setInteractive = set_interactive;
                     /* At the moment we support 0.2 APIs */
-                    dev->setFeature = NULL,
-                        dev->get_number_of_platform_modes = NULL,
-                        dev->get_platform_low_power_stats = NULL,
-                        dev->get_voter_list = NULL,
-                        *device = (hw_device_t*)dev;
+                    dev->setFeature = NULL;
+                    dev->get_number_of_platform_modes = NULL;
+                    dev->get_platform_low_power_stats = NULL;
+                    dev->get_voter_list = NULL;
+                    *device = (hw_device_t*)dev;
                     status = 0;
                 } else {
                     status = -ENOMEM;
                 }
-            }
-            else {
+            } else {
                 status = -ENOMEM;
             }
         }
